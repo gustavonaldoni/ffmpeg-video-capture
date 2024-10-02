@@ -1,13 +1,12 @@
 import ffmpeg
-import threading
-
+from multiprocessing.synchronize import Event as EventClass
 
 class VideoCapture:
     def __init__(self, video_path: str, fps: int = 30) -> None:
         self.video_path = video_path
         self.fps = fps
 
-    def capture_video(self, stop_event: threading.Event) -> bool:
+    def capture_video(self, stop_event: EventClass) -> None:
         process = (
             ffmpeg.input("desktop", format="gdigrab", framerate=self.fps)
             .output(self.video_path, pix_fmt="yuv420p", vcodec="libx264")

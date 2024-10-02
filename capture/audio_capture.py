@@ -1,6 +1,6 @@
 import pyaudio
-import threading
 import wave
+from multiprocessing.synchronize import Event as EventClass
 
 
 class AudioCapture:
@@ -12,9 +12,8 @@ class AudioCapture:
         self.channels = 2
         self.sample_rate = 44100
 
-    def capture_audio(self, stop_event: threading.Event) -> None:
+    def capture_audio(self, stop_event: EventClass) -> None:
         audio_capture_process = pyaudio.PyAudio()
-
         audio_stream = self.create_audio_stream(audio_capture_process)
         audio_frames = []
 
@@ -32,7 +31,7 @@ class AudioCapture:
     def create_audio_stream(
         self, audio_capture_process: pyaudio.PyAudio
     ) -> pyaudio.Stream:
-        audio_stream = audio_capture_process.open(
+        return audio_capture_process.open(
             format=self.audio_format,
             channels=self.channels,
             rate=self.sample_rate,
@@ -40,18 +39,14 @@ class AudioCapture:
             input=True,
         )
 
-        return audio_stream
-
     def save_audio_frames_to_wav(
         self, audio_frames: list[bytes], audio_capture_process: pyaudio.PyAudio
     ) -> None:
         arquivoWAV = wave.open(self.audio_path, "wb")
-
         arquivoWAV.setnchannels(self.channels)
         arquivoWAV.setsampwidth(
             audio_capture_process.get_sample_size(self.audio_format)
         )
         arquivoWAV.setframerate(self.sample_rate)
         arquivoWAV.writeframes(b"".join(audio_frames))
-
         arquivoWAV.close()
